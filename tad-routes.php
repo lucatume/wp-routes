@@ -8,25 +8,6 @@
  * Author URI: http://theAverageDev.com
  * License: GPL 2.0
  */
-global $_filters;
-add_action( 'all', '_log_filter' );
-add_filter( 'all', '_log_filter' );
-$_filters = array();
-function _log_filter() {
-	global $_filters;
-	$current_filter = current_filter();
-	if ( $current_filter == end( $_filters ) ) {
-		return;
-	}
-	$pattern = '/((pre_)*option_|get_user_|twentyfifteen_|(template|stylesheet)_directory_|sanitize_|wp_(audio|video)|post_type_|load_textdomain_|gettext|.*kses|theme_locale|salt).*$/';
-	if (preg_match( $pattern,$current_filter)) {
-		return;
-	}
-	if (in_array($current_filter,$_filters)) {
-		return;
-	}
-	$_filters[] = $current_filter;
-}
 
 /**
  * `do_parse_request` filter description

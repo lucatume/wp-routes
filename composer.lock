@@ -1,0 +1,97 @@
+{
+    "_readme": [
+        "This file locks the dependencies of your project to a known state",
+        "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
+        "This file is @generated automatically"
+    ],
+    "hash": "e089f7d3301c29e3394d3288c9c40ed1",
+    "packages": [
+        {
+            "name": "lucatume/klein52",
+            "version": "dev-master",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/lucatume/klein52.git",
+                "reference": "f01ff7c9f753ee9461821c8135641ee98b0a426d"
+            },
+            "require": {
+                "php": ">=5.2.17"
+            },
+            "require-dev": {
+                "phpunit/phpunit": "3.7.x"
+            },
+            "type": "library",
+            "autoload": {
+                "files": [
+                    "klein.php"
+                ]
+            },
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Chris O'Hara",
+                    "email": "cohara87@gmail.com",
+                    "homepage": "http://chris6f.com/",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Luca Tumedei",
+                    "email": "luca@theaveragedev.com",
+                    "homepage": "http://theaveragedev.com",
+                    "role": "PHP 5.2 adaptation"
+                }
+            ],
+            "description": "A lightning fast router for PHP 5.2 (fork of chriso/klein.php) ",
+            "homepage": "https://github.com/lucatume/klein.php",
+            "keywords": [
+                "boilerplate",
+                "router",
+                "routing",
+                "sinatra"
+            ],
+            "time": "2015-08-24 16:01:42"
+        },
+        {
+            "name": "xrstf/composer-php52",
+            "version": "dev-default",
+            "source": {
+                "type": "hg",
+                "url": "https://bitbucket.org/xrstf/composer-php52",
+                "reference": "1ff7517a885cad1aa42b370f926b308a2f9b5766"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://bitbucket.org/xrstf/composer-php52/get/1ff7517a885cad1aa42b370f926b308a2f9b5766.zip",
+                "reference": "1ff7517a885cad1aa42b370f926b308a2f9b5766",
+                "shasum": ""
+            },
+            "type": "library",
+            "extra": {
+                "branch-alias": {
+                    "dev-default": "1.x-dev"
+                }
+            },
+            "autoload": {
+                "psr-0": {
+                    "xrstf\\Composer52": "lib/"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "homepage": "http://www.xrstf.de/",
+            "time": "2015-08-07 21:46:00"
+        }
+    ],
+    "packages-dev": [],
+    "aliases": [],
+    "minimum-stability": "dev",
+    "stability-flags": [],
+    "prefer-stable": false,
+    "prefer-lowest": false,
+    "platform": [],
+    "platform-dev": []
+}

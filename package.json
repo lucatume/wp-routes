@@ -1,0 +1,26 @@
+{
+  "name": "tad-routes",
+  "version": "0.0.1",
+  "description": "Easy WordPress routing.",
+  "main": "tad-routes.php",
+  "repository": {
+    "type": "git",
+    "url": "git+https://lucatume@github.com/lucatume/wp-routes.git"
+  },
+  "keywords": [
+    "wordpress",
+    "plugin",
+    "routing"
+  ],
+  "author": "Luca Tumedeie <luca@theAverageDev.com>",
+  "license": "GPL-2.0",
+  "bugs": {
+    "url": "https://github.com/lucatume/wp-routes/issues"
+  },
+  "homepage": "https://github.com/lucatume/wp-routes#readme",
+  "devDependencies": {
+    "grunt": "^0.4.5",
+    "grunt-contrib-clean": "^0.6.0",
+    "grunt-git": "^0.3.5"
+  }
+}
