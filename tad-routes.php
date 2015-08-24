@@ -9,25 +9,35 @@
  * License: GPL 2.0
  */
 
+require 'vendor/autoload_52.php';
+
 /**
- * `do_parse_request` filter description
- *
- * Filter whether to parse the request.
- *
- * @since 3.5.0
- *
- * @param bool         $bool             Whether or not to parse the request. Default true.
- * @param WP           $this             Current WordPress environment instance.
- * @param array|string $extra_query_vars Extra passed query variables.
+ * Support methods
+ */
+function _json_post( $request, $response ) {
+	$post_id = $request->param( 'id' );
+	$post    = get_post( $post_id );
+	if ( empty( $post ) ) {
+		echo json_encode( [ 'Error' => 'Not a valid post ID' ] );
+	} else {
+		echo( json_encode( $post ) );
+	}
+}
+
+/**
+ * Routes
+ */
+function route_posts() {
+	respond( 'GET', '/[i:id]/json', '_json_post' );
+}
+
+/**
+ * Parse request
  */
 add_filter( 'do_parse_request', 'tad_routes_do_parse_request', 1, 3 );
 function tad_routes_do_parse_request( $continue, WP $wp, $extra_query_vars ) {
-	if ( preg_match( '~\\/my-route\\/?$~', $_SERVER['REQUEST_URI'] ) ) {
-		global $_filters;
-		array_pop($_filters);
-		echo sprintf( "Filters/actions executed before <code>do_parse_request</code>:\n\n%s", "<ul><li>" . implode( '</li><li>', $_filters ) . "</li></ul>" );
-		die();
-	}
-
-	return $continue;
+	with( '/posts', 'route_posts' );
+	dispatch();
+	die();
 }
+
