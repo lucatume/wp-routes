@@ -24,11 +24,24 @@ function _json_post( $request, $response ) {
 	}
 }
 
+function _dispatch() {
+	$found = dispatch( null, null, null, true );
+	if ( $found ) {
+		die( $found );
+	}
+}
+
+
 /**
  * Routes
  */
 function route_posts() {
 	respond( 'GET', '/[i:id]/json', '_json_post' );
+}
+
+function route_who_am_i() {
+	$user = wp_get_current_user();
+	echo $user->ID > 0 ? sprintf( 'Hi %s', $user->display_name ) : 'You are not logged in';
 }
 
 /**
@@ -37,7 +50,10 @@ function route_posts() {
 add_filter( 'do_parse_request', 'tad_routes_do_parse_request', 1, 3 );
 function tad_routes_do_parse_request( $continue, WP $wp, $extra_query_vars ) {
 	with( '/posts', 'route_posts' );
-	dispatch();
-	die();
+	respond( '/who-am-i', 'route_who_am_i' );
+	_dispatch();
+
+	return $continue;
 }
+
 
