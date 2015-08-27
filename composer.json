@@ -17,14 +17,13 @@
     }
   ],
   "require": {
-    "xrstf/composer-php52": "1.*",
     "lucatume/klein52": "*"
   },
+  "require-dev": {
+    "xrstf/composer-php52": "1.*"
+  },
   "scripts": {
-    "pre-install-cmd": [
-      "grunt pre-composer-update --verbose"
-    ],
-    "pre-update-cmd": [
+    "command": [
       "grunt pre-composer-update --verbose"
     ],
     "post-install-cmd": [
@@ -36,8 +35,7 @@
       "grunt after-composer-update --verbose"
     ],
     "post-autoload-dump": [
-      "xrstf\\Composer52\\Generator::onPostInstallCmd",
-      "grunt after-composer-update --verbose"
+      "xrstf\\Composer52\\Generator::onPostInstallCmd"
     ]
   }
 }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "af2d6408026d2e9575b91f1cc5a15bae",
+    "hash": "d7920f5686acd18e17a674c33a49a67a",
     "packages": [
         {
             "name": "lucatume/klein52",
@@ -52,7 +52,9 @@
                 "sinatra"
             ],
             "time": "2015-08-27 06:29:48"
-        },
+        }
+    ],
+    "packages-dev": [
         {
             "name": "xrstf/composer-php52",
             "version": "dev-default",
@@ -86,7 +88,6 @@
             "time": "2015-08-07 21:46:00"
         }
     ],
-    "packages-dev": [],
     "aliases": [],
     "minimum-stability": "dev",
     "stability-flags": [],
