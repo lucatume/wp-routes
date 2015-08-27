@@ -40,7 +40,7 @@
         "source": {
             "type": "git",
             "url": "https://github.com/lucatume/klein52.git",
-            "reference": "f01ff7c9f753ee9461821c8135641ee98b0a426d"
+            "reference": "8ca68a00511d1173cff0c4ebea46db6522caa4c1"
         },
         "require": {
             "php": ">=5.2.17"
@@ -48,7 +48,7 @@
         "require-dev": {
             "phpunit/phpunit": "3.7.x"
         },
-        "time": "2015-08-24 16:01:42",
+        "time": "2015-08-27 06:29:48",
         "type": "library",
         "installation-source": "source",
         "autoload": {
