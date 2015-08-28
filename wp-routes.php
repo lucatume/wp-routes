@@ -1,6 +1,6 @@
 <?php
 /**
- * Plugin Name: theAverageDev Routes
+ * Plugin Name: WP Routes
  * Plugin URI: http://theAverageDev.com
  * Description: Routing for WordPress
  * Version: 1.0
