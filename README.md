@@ -40,9 +40,7 @@ In my plugin or theme `functions.php` file:
 The possibilities above are possible thanks to the [klein.php library](https://github.com/chriso/klein.php) by Chris O'Hara; I've merely ported v. 1.2.0 of the library to be back compatible with PHP 5.2 and used the goodness.  
 
 ## Installation
-Download the `.zip` file or require the library with [Composer](https://getcomposer.org/) using
-
-	composer require lucatume/wp-routes
+Download the `.zip` file and put in WordPress plugin folder.
 	
 ## Usage
 The plugin packs the [klein52 library](https://github.com/lucatume/klein52) and allow plugins and themes developers to use any of its methods.  
