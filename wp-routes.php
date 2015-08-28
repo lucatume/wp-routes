@@ -20,7 +20,7 @@ require 'vendor/autoload_52.php';
  *
  * @return bool|void Either a bool for the `$continue` value or void if the parse request is stopped.
  */
-function tad_routes_do_parse_request( $continue, WP $wp, $extra_query_vars ) {
+function wp_routes_do_parse_request( $continue, WP $wp, $extra_query_vars ) {
 	/**
 	 * Allows plugin and theme developers to register custom routes to be handled before WordPress
 	 * parses the request.
@@ -31,7 +31,7 @@ function tad_routes_do_parse_request( $continue, WP $wp, $extra_query_vars ) {
 	 * @param WP           $this             Current WordPress environment instance.
 	 * @param array|string $extra_query_vars Extra passed query variables.
 	 */
-	do_action( 'tad/routes/register_routes', $continue, $wp, $extra_query_vars );
+	do_action( 'wp-routes/register_routes', $continue, $wp, $extra_query_vars );
 
 	/**
 	 * if no echo was produced or the only echo produced is from "*" routes
@@ -43,4 +43,4 @@ function tad_routes_do_parse_request( $continue, WP $wp, $extra_query_vars ) {
 	return $continue;
 }
 
-add_filter( 'do_parse_request', 'tad_routes_do_parse_request', 1, 3 );
+add_filter( 'do_parse_request', 'wp_routes_do_parse_request', 1, 3 );
