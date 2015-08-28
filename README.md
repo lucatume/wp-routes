@@ -42,7 +42,7 @@ The possibilities above are possible thanks to the [klein.php library](https://g
 ## Installation
 Download the `.zip` file or require the library with [Composer](https://getcomposer.org/) using
 
-	composer require lucatume/wp-routes.php
+	composer require lucatume/wp-routes
 	
 ## Usage
 The plugin packs the [klein52 library](https://github.com/lucatume/klein52) and allow plugins and themes developers to use any of its methods.  
