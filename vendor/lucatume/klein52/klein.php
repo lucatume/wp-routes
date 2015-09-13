@@ -3,6 +3,10 @@
 # http://github.com/chriso/klein.php
 # Modified to work in PHP 5.2 by Luca Tumedei <luca@theaveragedev.com>
 
+if ( function_exists( 'respond' ) ) {
+	return;
+}
+
 $__routes    = array();
 $__namespace = null;
 

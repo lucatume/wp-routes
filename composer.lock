@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#composer-lock-the-lock-file",
         "This file is @generated automatically"
     ],
-    "hash": "d7920f5686acd18e17a674c33a49a67a",
+    "hash": "1c5559d928238de53345e3ce8cbc60ee",
     "packages": [
         {
             "name": "lucatume/klein52",
@@ -12,7 +12,7 @@
             "source": {
                 "type": "git",
                 "url": "https://github.com/lucatume/klein52.git",
-                "reference": "8ca68a00511d1173cff0c4ebea46db6522caa4c1"
+                "reference": "20d705c1575322188653415fb9a134b3971c86e8"
             },
             "require": {
                 "php": ">=5.2.17"
@@ -51,7 +51,7 @@
                 "routing",
                 "sinatra"
             ],
-            "time": "2015-08-27 06:29:48"
+            "time": "2015-09-13 09:53:47"
         }
     ],
     "packages-dev": [
