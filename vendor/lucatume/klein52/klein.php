@@ -3,8 +3,11 @@
 # http://github.com/chriso/klein.php
 # Modified to work in PHP 5.2 by Luca Tumedei <luca@theaveragedev.com>
 
-if ( function_exists( 'respond' ) ) {
+if ( function_exists( '_klein_loaded' ) ) {
 	return;
+} else {
+	function _klein_loaded() {
+	}
 }
 
 $__routes    = array();
@@ -14,10 +17,10 @@ $__namespace = null;
 function respond( $method, $route = '*', $callback = null ) {
 	global $__routes, $__namespace;
 
-	$args        = func_get_args();
-	$callback    = array_pop( $args );
-	$route       = array_pop( $args );
-	$method      = array_pop( $args );
+	$args     = func_get_args();
+	$callback = array_pop( $args );
+	$route    = array_pop( $args );
+	$method   = array_pop( $args );
 
 	if ( null === $route ) {
 		$route = '*';
@@ -156,29 +159,29 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 			$match = true;
 
 			// Easily handle 404's
-		} elseif ( $_route === '404' && !$matched && count( $methods_matched ) <= 0 ) {
+		} elseif ( $_route === '404' && ! $matched && count( $methods_matched ) <= 0 ) {
 			try {
 				call_user_func( $callback, $request, $response, $app, $matched, $methods_matched );
 			} catch ( Exception $e ) {
 				$response->error( $e );
 			}
 
-			++$matched;
+			++ $matched;
 			continue;
 
 			// Easily handle 405's
-		} elseif ( $_route === '405' && !$matched && count( $methods_matched ) > 0 ) {
+		} elseif ( $_route === '405' && ! $matched && count( $methods_matched ) > 0 ) {
 			try {
 				call_user_func( $callback, $request, $response, $app, $matched, $methods_matched );
 			} catch ( Exception $e ) {
 				$response->error( $e );
 			}
 
-			++$matched;
+			++ $matched;
 			continue;
 
 			// @ is used to specify custom regex
-		} elseif ( isset( $_route[$i] ) && $_route[$i] === '@' ) {
+		} elseif ( isset( $_route[ $i ] ) && $_route[ $i ] === '@' ) {
 			$match = preg_match( '`' . substr( $_route, $i + 1 ) . '`', $uri, $params );
 
 			// Compiling and matching regular expressions is relatively
@@ -187,25 +190,25 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 			$route = null;
 			$regex = false;
 			$j     = 0;
-			$n     = isset( $_route[$i] ) ? $_route[$i] : null;
+			$n     = isset( $_route[ $i ] ) ? $_route[ $i ] : null;
 
 			// Find the longest non-regex substring and match it against the URI
 			while ( true ) {
-				if ( !isset( $_route[$i] ) ) {
+				if ( ! isset( $_route[ $i ] ) ) {
 					break;
 				} elseif ( false === $regex ) {
 					$c     = $n;
 					$regex = $c === '[' || $c === '(' || $c === '.';
-					if ( false === $regex && false !== isset( $_route[$i + 1] ) ) {
-						$n     = $_route[$i + 1];
+					if ( false === $regex && false !== isset( $_route[ $i + 1 ] ) ) {
+						$n     = $_route[ $i + 1 ];
 						$regex = $n === '?' || $n === '+' || $n === '*' || $n === '{';
 					}
-					if ( false === $regex && $c !== '/' && ( !isset( $uri[$j] ) || $c !== $uri[$j] ) ) {
+					if ( false === $regex && $c !== '/' && ( ! isset( $uri[ $j ] ) || $c !== $uri[ $j ] ) ) {
 						continue 2;
 					}
-					$j++;
+					$j ++;
 				}
-				$route .= $_route[$i++];
+				$route .= $_route[ $i ++ ];
 			}
 
 			// Check if there's a cached regex string
@@ -224,7 +227,7 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 
 		if ( isset( $match ) && $match ^ $negate ) {
 			// Keep track of possibly matched methods
-			$methods_matched = array_merge( $methods_matched, (array)$method );
+			$methods_matched = array_merge( $methods_matched, (array) $method );
 			$methods_matched = array_filter( $methods_matched );
 			$methods_matched = array_unique( $methods_matched );
 
@@ -238,16 +241,16 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 					$response->error( $e );
 				}
 				if ( $_route !== '*' ) {
-					$count_match && ++$matched;
+					$count_match && ++ $matched;
 				}
 			}
 		}
 	}
 
-	if ( !$matched && count( $methods_matched ) > 0 ) {
+	if ( ! $matched && count( $methods_matched ) > 0 ) {
 		$response->code( 405 );
 		$response->header( 'Allow', implode( ', ', $methods_matched ) );
-	} elseif ( !$matched ) {
+	} elseif ( ! $matched ) {
 		$response->code( 404 );
 	}
 
@@ -257,6 +260,7 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 
 			return false;
 		}
+
 		return ob_get_clean();
 	} elseif ( $response->chunked ) {
 		$response->chunk();
@@ -276,12 +280,19 @@ function dispatch_or_continue( $uri = null, $req_method = null, array $params = 
 // Compiles a route string to a regular expression
 function compile_route( $route ) {
 	if ( preg_match_all( '`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER ) ) {
-		$match_types = array( 'i' => '[0-9]++', 'a' => '[0-9A-Za-z]++', 'h' => '[0-9A-Fa-f]++', '*' => '.+?', '**' => '.++', '' => '[^/]+?' );
+		$match_types = array(
+			'i'  => '[0-9]++',
+			'a'  => '[0-9A-Za-z]++',
+			'h'  => '[0-9A-Fa-f]++',
+			'*'  => '.+?',
+			'**' => '.++',
+			''   => '[^/]+?'
+		);
 		foreach ( $matches as $match ) {
 			list( $block, $pre, $type, $param, $optional ) = $match;
 
-			if ( isset( $match_types[$type] ) ) {
-				$type = $match_types[$type];
+			if ( isset( $match_types[ $type ] ) ) {
+				$type = $match_types[ $type ];
 			}
 			if ( $pre === '.' ) {
 				$pre = '\.';
@@ -302,21 +313,21 @@ class _Request {
 	static $_headers = null;
 
 	// HTTP headers helper
-	protected $_id = null;
+	protected $_id   = null;
 	protected $_body = null;
 
 	// Returns all parameters (GET, POST, named) that match the mask
 	public function params( $mask = null ) {
 		$params = $_REQUEST;
 		if ( null !== $mask ) {
-			if ( !is_array( $mask ) ) {
+			if ( ! is_array( $mask ) ) {
 				$mask = func_get_args();
 			}
 			$params = array_intersect_key( $params, array_flip( $mask ) );
 			// Make sure each key in $mask has at least a null value
 			foreach ( $mask as $key ) {
-				if ( !isset( $params[$key] ) ) {
-					$params[$key] = null;
+				if ( ! isset( $params[ $key ] ) ) {
+					$params[ $key ] = null;
 				}
 			}
 		}
@@ -327,24 +338,24 @@ class _Request {
 	// Return a request parameter, or $default if it doesn't exist
 
 	public function __isset( $param ) {
-		return isset( $_REQUEST[$param] );
+		return isset( $_REQUEST[ $param ] );
 	}
 
 	public function __get( $param ) {
-		return isset( $_REQUEST[$param] ) ? $_REQUEST[$param] : null;
+		return isset( $_REQUEST[ $param ] ) ? $_REQUEST[ $param ] : null;
 	}
 
 	public function __set( $param, $value ) {
-		$_REQUEST[$param] = $value;
+		$_REQUEST[ $param ] = $value;
 	}
 
 	public function __unset( $param ) {
-		unset( $_REQUEST[$param] );
+		unset( $_REQUEST[ $param ] );
 	}
 
 	public function isSecure( $required = false ) {
 		$secure = isset( $_SERVER['HTTPS'] ) && $_SERVER['HTTPS'];
-		if ( !$secure && $required ) {
+		if ( ! $secure && $required ) {
 			$url = 'https://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
 			self::$_headers->header( 'Location: ' . $url );
 		}
@@ -357,13 +368,13 @@ class _Request {
 	public function header( $key, $default = null ) {
 		$key = 'HTTP_' . strtoupper( str_replace( '-', '_', $key ) );
 
-		return isset( $_SERVER[$key] ) ? $_SERVER[$key] : $default;
+		return isset( $_SERVER[ $key ] ) ? $_SERVER[ $key ] : $default;
 	}
 
 	// Gets a request header
 
 	public function cookie( $key, $default = null ) {
-		return isset( $_COOKIE[$key] ) ? $_COOKIE[$key] : $default;
+		return isset( $_COOKIE[ $key ] ) ? $_COOKIE[ $key ] : $default;
 	}
 
 	// Gets a request cookie
@@ -386,7 +397,7 @@ class _Request {
 	// Start a validator chain for the specified parameter
 
 	public function param( $key, $default = null ) {
-		return isset( $_REQUEST[$key] ) && $_REQUEST[$key] !== '' ? $_REQUEST[$key] : $default;
+		return isset( $_REQUEST[ $key ] ) && $_REQUEST[ $key ] !== '' ? $_REQUEST[ $key ] : $default;
 	}
 
 	// Gets a unique ID for the request
@@ -403,7 +414,7 @@ class _Request {
 	public function session( $key, $default = null ) {
 		startSession();
 
-		return isset( $_SESSION[$key] ) ? $_SESSION[$key] : $default;
+		return isset( $_SESSION[ $key ] ) ? $_SESSION[ $key ] : $default;
 	}
 
 	// Gets the request IP address
@@ -434,12 +445,12 @@ class _Request {
 
 class _Response extends StdClass {
 
-	static $_headers = null;
-	public $chunked = false;
+	static    $_headers        = null;
+	public    $chunked         = false;
 	protected $_errorCallbacks = array();
-	protected $_layout = null;
-	protected $_view = null;
-	protected $_code = 200;
+	protected $_layout         = null;
+	protected $_view           = null;
+	protected $_code           = 200;
 
 	// Enable response chunking. See: http://bit.ly/hg3gHb
 
@@ -565,7 +576,7 @@ class _Response extends StdClass {
 		if ( is_array( $key ) ) {
 			$query = array_merge( $query, $key );
 		} else {
-			$query[$key] = $value;
+			$query[ $key ] = $value;
 		}
 
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '/';
@@ -573,7 +584,7 @@ class _Response extends StdClass {
 			$request_uri = strstr( $request_uri, '?', true );
 		}
 
-		return $request_uri . ( !empty( $query ) ? '?' . http_build_query( $query ) : null );
+		return $request_uri . ( ! empty( $query ) ? '?' . http_build_query( $query ) : null );
 	}
 
 	// Redirects the request back to the referrer
@@ -596,7 +607,7 @@ class _Response extends StdClass {
 	public function render( $view, array $data = array() ) {
 		$original_view = $this->_view;
 
-		if ( !empty( $data ) ) {
+		if ( ! empty( $data ) ) {
 			$this->set( $data );
 		}
 		$this->_view = $view;
@@ -616,7 +627,7 @@ class _Response extends StdClass {
 	// Set the view layout
 
 	public function set( $key, $value = null ) {
-		if ( !is_array( $key ) ) {
+		if ( ! is_array( $key ) ) {
 			return $this->$key = $value;
 		}
 		foreach ( $key as $k => $value ) {
@@ -655,7 +666,7 @@ class _Response extends StdClass {
 	public function session( $key, $value = null ) {
 		startSession();
 
-		return $_SESSION[$key] = $value;
+		return $_SESSION[ $key ] = $value;
 	}
 
 	// Sets a session variable
@@ -695,19 +706,23 @@ class _Response extends StdClass {
 			$params = $type;
 			$type   = 'info';
 		}
-		if ( !isset( $_SESSION['__flashes'] ) ) {
+		if ( ! isset( $_SESSION['__flashes'] ) ) {
 			$_SESSION['__flashes'] = array( $type => array() );
-		} elseif ( !isset( $_SESSION['__flashes'][$type] ) ) {
-			$_SESSION['__flashes'][$type] = array();
+		} elseif ( ! isset( $_SESSION['__flashes'][ $type ] ) ) {
+			$_SESSION['__flashes'][ $type ] = array();
 		}
-		$_SESSION['__flashes'][$type][] = $this->markdown( $msg, $params );
+		$_SESSION['__flashes'][ $type ][] = $this->markdown( $msg, $params );
 	}
 
 	// Returns an escaped request paramater
 
 	public function markdown( $str, $args = null ) {
 		$args = func_get_args();
-		$md   = array( '/\[([^\]]++)\]\(([^\)]++)\)/' => '<a href="$2">$1</a>', '/\*\*([^\*]++)\*\*/' => '<strong>$1</strong>', '/\*([^\*]++)\*/' => '<em>$1</em>' );
+		$md   = array(
+			'/\[([^\]]++)\]\(([^\)]++)\)/' => '<a href="$2">$1</a>',
+			'/\*\*([^\*]++)\*\*/'          => '<strong>$1</strong>',
+			'/\*([^\*]++)\*/'              => '<em>$1</em>'
+		);
 		$str  = array_shift( $args );
 		if ( is_array( $args[0] ) ) {
 			$args = $args[0];
@@ -722,14 +737,14 @@ class _Response extends StdClass {
 	// Returns and clears all flashes of optional $type
 
 	public function param( $param, $default = null ) {
-		return isset( $_REQUEST[$param] ) ? htmlentities( $_REQUEST[$param], ENT_QUOTES ) : $default;
+		return isset( $_REQUEST[ $param ] ) ? htmlentities( $_REQUEST[ $param ], ENT_QUOTES ) : $default;
 	}
 
 	// Escapes a string
 
 	public function flashes( $type = null ) {
 		startSession();
-		if ( !isset( $_SESSION['__flashes'] ) ) {
+		if ( ! isset( $_SESSION['__flashes'] ) ) {
 			return array();
 		}
 		if ( null === $type ) {
@@ -737,9 +752,9 @@ class _Response extends StdClass {
 			unset( $_SESSION['__flashes'] );
 		} elseif ( null !== $type ) {
 			$flashes = array();
-			if ( isset( $_SESSION['__flashes'][$type] ) ) {
-				$flashes = $_SESSION['__flashes'][$type];
-				unset( $_SESSION['__flashes'][$type] );
+			if ( isset( $_SESSION['__flashes'][ $type ] ) ) {
+				$flashes = $_SESSION['__flashes'][ $type ];
+				unset( $_SESSION['__flashes'][ $type ] );
 			}
 		}
 
@@ -773,7 +788,7 @@ class _Response extends StdClass {
 
 	// Allow callbacks to be assigned as properties and called like normal methods
 	public function __call( $method, $args ) {
-		if ( !isset( $this->$method ) || !is_callable( $this->$method ) ) {
+		if ( ! isset( $this->$method ) || ! is_callable( $this->$method ) ) {
 			throw new ErrorException( "Unknown method $method()" );
 		}
 		$callback = $this->$method;
@@ -794,7 +809,7 @@ class _Response extends StdClass {
 
 
 function addValidator( $method, $callback ) {
-	_Validator::$_methods[strtolower( $method )] = $callback;
+	_Validator::$_methods[ strtolower( $method ) ] = $callback;
 }
 
 
@@ -855,14 +870,14 @@ class _Validator {
 	 * @return Closure
 	 */
 	private static function validateInt( $str ) {
-		return (string)$str === ( (string)(int)$str );
+		return (string) $str === ( (string) (int) $str );
 	}
 
 	/**
 	 * @return Closure
 	 */
 	private static function validateFloat( $str ) {
-		return (string)$str === ( (string)(float)$str );
+		return (string) $str === ( (string) (float) $str );
 	}
 
 	/**
@@ -934,10 +949,10 @@ class _Validator {
 		}
 		$validator = strtolower( $validator );
 
-		if ( !$validator || !isset( self::$_methods[$validator] ) ) {
+		if ( ! $validator || ! isset( self::$_methods[ $validator ] ) ) {
 			throw new ErrorException( "Unknown method $method()" );
 		}
-		$validator = self::$_methods[$validator];
+		$validator = self::$_methods[ $validator ];
 		array_unshift( $args, $this->_str );
 
 		switch ( count( $args ) ) {
@@ -958,7 +973,7 @@ class _Validator {
 				break;
 		}
 
-		$result = (bool)( $result ^ $reverse );
+		$result = (bool) ( $result ^ $reverse );
 		if ( false === $this->_err ) {
 			return $result;
 		} elseif ( false === $result ) {
@@ -972,22 +987,22 @@ class _Validator {
 
 class _App {
 
-	protected $services = array();
+	protected $services         = array();
 	protected $serviceInstances = array();
 
 	// Check for a lazy service
 	public function __get( $name ) {
-		if ( !isset( $this->services[$name] ) ) {
+		if ( ! isset( $this->services[ $name ] ) ) {
 			throw new InvalidArgumentException( "Unknown service $name" );
 		}
-		$service = $this->services[$name];
+		$service = $this->services[ $name ];
 
 		return $service();
 	}
 
 	// Call a class property like a method
 	public function __call( $method, $args ) {
-		if ( !isset( $this->$method ) || !is_callable( $this->$method ) ) {
+		if ( ! isset( $this->$method ) || ! is_callable( $this->$method ) ) {
 			throw new ErrorException( "Unknown method $method()" );
 		}
 
@@ -996,14 +1011,14 @@ class _App {
 
 	// Register a lazy service
 	public function register( $name, $callable ) {
-		if ( isset( $this->services[$name] ) ) {
+		if ( isset( $this->services[ $name ] ) ) {
 			throw new Exception( "A service is already registered under $name" );
 		}
-		if ( null === $this->serviceInstances[$name] ) {
-			$this->serviceInstances[$name] = call_user_func( $callable );
+		if ( null === $this->serviceInstances[ $name ] ) {
+			$this->serviceInstances[ $name ] = call_user_func( $callable );
 		}
 
-		return $this->serviceInstances[$name];
+		return $this->serviceInstances[ $name ];
 	}
 }
 
@@ -1032,4 +1047,3 @@ class _Headers {
 
 
 _Request::$_headers = _Response::$_headers = new _Headers;
-
