@@ -22,6 +22,11 @@
   "require-dev": {
     "xrstf/composer-php52": "1.*"
   },
+  "autoload": {
+    "files": [
+      "vendor/lucatume/klein52/klein.php"
+    ]
+  },
   "scripts": {
     "command": [
       "grunt pre-composer-update --verbose"
