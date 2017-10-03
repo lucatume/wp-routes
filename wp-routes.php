@@ -9,7 +9,7 @@
  * License: GPL 2.0
  */
 
-require_once dirname( __FILE__ ) . 'vendor/lucatume/klein52/wp_klein.php';
+require_once dirname( __FILE__ ) . '/vendor/lucatume/klein52/wp_klein.php';
 
 if ( ! function_exists( 'wp_routes_do_parse_request' ) ) {
 	/**
