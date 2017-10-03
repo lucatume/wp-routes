@@ -2,42 +2,22 @@
   "name": "lucatume/wp-routes",
   "description": "Easy WordPress routing.",
   "type": "wordpress-plugin",
-  "license": "GPL 2.0",
+  "license": "GPL-2.0",
   "authors": [
     {
       "name": "Luca Tumedei",
       "email": "luca@theaveragedev.com"
     }
   ],
-  "minimum-stability": "dev",
-  "repositories": [
-    {
-      "type": "git",
-      "url": "https://github.com/lucatume/klein52.git"
-    }
-  ],
   "require": {
-    "lucatume/klein52": "*"
-  },
-  "require-dev": {
-    "xrstf/composer-php52": "1.*"
-  },
-  "autoload": {
-    "files": [
-      "vendor/lucatume/klein52/klein.php"
-    ]
+    "lucatume/klein52": "~1.1.0"
   },
   "scripts": {
-    "command": [
-      "grunt pre-composer-update --verbose"
-    ],
     "post-install-cmd": [
-      "xrstf\\Composer52\\Generator::onPostInstallCmd",
-      "grunt after-composer-update --verbose"
+      "xrstf\\Composer52\\Generator::onPostInstallCmd"
     ],
     "post-update-cmd": [
-      "xrstf\\Composer52\\Generator::onPostInstallCmd",
-      "grunt after-composer-update --verbose"
+      "xrstf\\Composer52\\Generator::onPostInstallCmd"
     ],
     "post-autoload-dump": [
       "xrstf\\Composer52\\Generator::onPostInstallCmd"

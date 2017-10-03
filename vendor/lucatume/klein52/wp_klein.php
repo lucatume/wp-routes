@@ -1,21 +1,27 @@
 <?php
-# (c) Chris O'Hara <cohara87@gmail.com> (MIT License)
-# http://github.com/chriso/klein.php
-# Modified to work in PHP 5.2 by Luca Tumedei <luca@theaveragedev.com>
+/*
+ * (c) Chris O'Hara <cohara87@gmail.com> (MIT License)
+ * http://github.com/chriso/klein.php
+ * Modified to work in PHP 5.2 by Luca Tumedei <luca@theaveragedev.com>
+ * https://github.com/lucatume/klein52
+ */
 
-if ( function_exists( '_klein_loaded' ) ) {
-	return;
-} else {
-	function _klein_loaded() {
-	}
-}
+$__klein_routes    = array();
+$__klein_namespace = null;
 
-$__routes    = array();
-$__namespace = null;
-
-// Add a route callback
-function respond( $method, $route = '*', $callback = null ) {
-	global $__routes, $__namespace;
+/**
+ * Registers a route as one handled by klein.
+ *
+ * @since 1.0.3
+ *
+ * @param        string $method   A supported HTTP method, e.g. `GET`, `POST`, `DELETE` and so on.
+ * @param string        $route    The route matching pattern.
+ * @param  callable     $callback The callback that should be used to handle the request.
+ *
+ * @return mixed|null
+ */
+function klein_respond( $method, $route = '*', $callback = null ) {
+	global $__klein_routes, $__klein_namespace;
 
 	$args     = func_get_args();
 	$callback = array_pop( $args );
@@ -29,7 +35,7 @@ function respond( $method, $route = '*', $callback = null ) {
 	// only consider a request to be matched when not using matchall
 	$count_match = ( $route !== '*' );
 
-	if ( $__namespace && $route[0] === '@' || ( $route[0] === '!' && $route[1] === '@' ) ) {
+	if ( $__klein_namespace && $route[0] === '@' || ( $route[0] === '!' && $route[1] === '@' ) ) {
 		if ( $route[0] === '!' ) {
 			$negate = true;
 			$route  = substr( $route, 2 );
@@ -46,56 +52,83 @@ function respond( $method, $route = '*', $callback = null ) {
 		}
 
 		if ( $negate ) {
-			$route = '@^' . $__namespace . '(?!' . $route . ')';
+			$route = '@^' . $__klein_namespace . '(?!' . $route . ')';
 		} else {
-			$route = '@^' . $__namespace . $route;
+			$route = '@^' . $__klein_namespace . $route;
 		}
 	} // empty route with namespace is a match-all
-	elseif ( $__namespace && ( '*' === $route ) ) {
-		$route = '@^' . $__namespace . '(/|$)';
+	elseif ( $__klein_namespace && ( '*' === $route ) ) {
+		$route = '@^' . $__klein_namespace . '(/|$)';
 	} else {
-		$route = $__namespace . $route;
+		$route = $__klein_namespace . $route;
 	}
 
-	$__routes[] = array( $method, $route, $callback, $count_match );
+	$__klein_routes[] = array( $method, $route, $callback, $count_match );
 
 	return $callback;
 }
 
-// Each route defined inside $routes will be in the $namespace
-function with( $namespace, $routes ) {
-	global $__namespace;
-	$previous = $__namespace;
-	$__namespace .= $namespace;
+/**
+ * Registers a group of routes with a common root namespace.
+ *
+ * @since 1.0.3
+ *
+ * @param string $namespace The namespace that for a group of routes, e.g. `/users` or `/api/admin`
+ * @param string|callable $routes Either the path to a file defining a group of routes or a callable
+ *                                registering a group of routes.
+ */
+function klein_with( $namespace, $routes ) {
+	global $__klein_namespace;
+	$previous          = $__klein_namespace;
+	$__klein_namespace .= $namespace;
 	if ( is_callable( $routes ) ) {
 		$routes();
 	} else {
 		require $routes;
 	}
-	$__namespace = $previous;
+	$__klein_namespace = $previous;
 }
 
-function startSession() {
+/**
+ * Starts the session.
+ *
+ * @since 1.0.3
+ */
+function klein_start_session() {
 	if ( session_id() === '' ) {
 		session_start();
 	}
 }
 
-// Dispatch the request to the approriate route(s)
-function dispatch( $uri = null, $req_method = null, array $params = null, $capture = false, $passthru = false ) {
-	global $__routes;
+/**
+ * Dispatches a request to the appropriate route.
+ *
+ * @since 1.0.3
+ *
+ * @param null|string       $uri The request URI
+ * @param null|string       $req_method The request method, e.g. `GET`, `POST` or `DELETE`
+ * @param array|null $params An array of parameters for the request
+ * @param bool       $capture Whether the matching route response output should be printed or not
+ * @param bool       $passthru If `capture` is set to `true` when no route is matched the function will
+ *                             return `false`
+ *
+ * @return bool|string `false` if the route was not matched and `capture` and `passthru` were `true`; the matched
+ *                     route output otherwise.
+ */
+function klein_dispatch( $uri = null, $req_method = null, array $params = null, $capture = false, $passthru = false ) {
+	global $__klein_routes;
 
 	// Pass $request, $response, and a blank object for sharing scope through each callback
-	$request  = new _Request;
-	$response = new _Response;
-	$app      = new _App;
+	$request  = new klein_Request;
+	$response = new klein_Response;
+	$app      = new klein_App;
 
 	// Get/parse the request URI and method
 	if ( null === $uri ) {
 		$uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '/';
 	}
 	if ( false !== strpos( $uri, '?' ) ) {
-		$uri = strstr( $uri, '?', true );
+		$uri = str_replace( stristr( $uri, "?" ), "", $uri );
 	}
 	if ( null === $req_method ) {
 		$req_method = isset( $_SERVER['REQUEST_METHOD'] ) ? $_SERVER['REQUEST_METHOD'] : 'GET';
@@ -104,7 +137,7 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 		// header or _method parameter
 		if ( isset( $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'] ) ) {
 			$req_method = $_SERVER['HTTP_X_HTTP_METHOD_OVERRIDE'];
-		} else if ( isset( $_REQUEST['_method'] ) ) {
+		} elseif ( isset( $_REQUEST['_method'] ) ) {
 			$req_method = $_REQUEST['_method'];
 		}
 	}
@@ -118,11 +151,10 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 
 	$matched         = 0;
 	$methods_matched = array();
-	$apc             = function_exists( 'apc_fetch' );
 
 	ob_start();
 
-	foreach ( $__routes as $handler ) {
+	foreach ( $__klein_routes as $handler ) {
 		list( $method, $_route, $callback, $count_match ) = $handler;
 
 		$method_match = null;
@@ -162,7 +194,8 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 		} elseif ( $_route === '404' && ! $matched && count( $methods_matched ) <= 0 ) {
 			try {
 				call_user_func( $callback, $request, $response, $app, $matched, $methods_matched );
-			} catch ( Exception $e ) {
+			}
+			catch ( Exception $e ) {
 				$response->error( $e );
 			}
 
@@ -173,7 +206,8 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 		} elseif ( $_route === '405' && ! $matched && count( $methods_matched ) > 0 ) {
 			try {
 				call_user_func( $callback, $request, $response, $app, $matched, $methods_matched );
-			} catch ( Exception $e ) {
+			}
+			catch ( Exception $e ) {
 				$response->error( $e );
 			}
 
@@ -212,14 +246,10 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 			}
 
 			// Check if there's a cached regex string
-			if ( false !== $apc ) {
-				$regex = apc_fetch( "route:$route" );
-				if ( false === $regex ) {
-					$regex = compile_route( $route );
-					apc_store( "route:$route", $regex );
-				}
-			} else {
-				$regex = compile_route( $route );
+			$regex = wp_cache_get( "route:$route", 'klein' );
+			if ( false === $regex ) {
+				$regex = klein_compile_route( $route );
+				wp_cache_set( "route:$route", $regex,'klein' );
 			}
 
 			$match = preg_match( $regex, $uri, $params );
@@ -237,7 +267,8 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 				}
 				try {
 					call_user_func( $callback, $request, $response, $app, $matched, $methods_matched );
-				} catch ( Exception $e ) {
+				}
+				catch ( Exception $e ) {
 					$response->error( $e );
 				}
 				if ( $_route !== '*' ) {
@@ -269,16 +300,64 @@ function dispatch( $uri = null, $req_method = null, array $params = null, $captu
 	}
 }
 
-// Dispatch the request to the approriate route(s) or continue
-function dispatch_or_continue( $uri = null, $req_method = null, array $params = null ) {
-	$found = dispatch( $uri, $req_method, $params, true, true );
+/**
+ * Dispatches the request to the first available matching routes and dies, or continues the script execution.
+ *
+ * @since 1.0.3
+ *
+ * @param null|string       $uri The request URI
+ * @param null|string       $req_method The request method, e.g. `GET`, `POST` or `DELETE`
+ * @param array|null $params An array of parameters for the request
+ *
+ * @return string|void|mixed|bool The route output if one was matched and the `dieCallback` is set to `true`;
+ *                     otherwise the route output will be output before `die`ing; `false` if no matching route
+ *                                was found.
+ */
+function klein_dispatch_or_continue( $uri = null, $req_method = null, array $params = null ) {
+	$found = klein_dispatch( $uri, $req_method, $params, true, true );
 	if ( $found ) {
-		die( $found );
+		$dieCallback = null;
+
+		if ( function_exists( 'apply_filters' ) ) {
+			/**
+			 * Filters the die (output) handler to use when a route is matched.
+			 *
+			 * @since 1.0.3
+			 *
+			 * Use the special value "echo "To just echo the result and return, e.g.:
+			 *
+			 *        add_filter('klein_die_handler', function(){
+			 *            return 'echo';
+			 *        });
+			 *
+			 * @params callabe $handler The function that will be called to output the request; default `die`
+			 */
+			$dieCallback = apply_filters( 'klein_die_handler', null );
+		}
+
+		switch ( $dieCallback ) {
+			case 'echo':
+				echo $found;
+
+				return;
+			case null:
+				die ( $found );
+			default:
+				return $dieCallback( $found );
+		}
 	}
 }
 
-// Compiles a route string to a regular expression
-function compile_route( $route ) {
+/**
+ * Compiles a route from the format used by klein to a regular expression.
+ *
+ * @since 1.0.3
+ *
+ * @param string $route The route in the format supported by klein.
+ *
+ * @return string The regular expression corresponding to the input route.
+ */
+function klein_compile_route( $route ) {
 	if ( preg_match_all( '`(/|\.|)\[([^:\]]*+)(?::([^:\]]*+))?\](\?|)`', $route, $matches, PREG_SET_ORDER ) ) {
 		$match_types = array(
 			'i'  => '[0-9]++',
@@ -286,7 +365,7 @@ function compile_route( $route ) {
 			'h'  => '[0-9A-Fa-f]++',
 			'*'  => '.+?',
 			'**' => '.++',
-			''   => '[^/]+?'
+			''   => '[^/]+?',
 		);
 		foreach ( $matches as $match ) {
 			list( $block, $pre, $type, $param, $optional ) = $match;
@@ -307,13 +386,17 @@ function compile_route( $route ) {
 	return "`^$route$`";
 }
 
+/**
+ * Class klein_Request
+ *
+ * @since 1.0.3
+ */
+class klein_Request {
 
-class _Request {
-
-	static $_headers = null;
+	public static $_headers = null;
 
 	// HTTP headers helper
-	protected $_id   = null;
+	protected $_id = null;
 	protected $_body = null;
 
 	// Returns all parameters (GET, POST, named) that match the mask
@@ -391,7 +474,7 @@ class _Request {
 	// Gets the request method, or checks it against $is - e.g. method('post') => true
 
 	public function validate( $param, $err = null ) {
-		return new _Validator( $this->param( $param ), $err );
+		return new klein_Validator( $this->param( $param ), $err );
 	}
 
 	// Start a validator chain for the specified parameter
@@ -412,7 +495,7 @@ class _Request {
 
 	// Gets a session variable associated with the request
 	public function session( $key, $default = null ) {
-		startSession();
+		klein_start_session();
 
 		return isset( $_SESSION[ $key ] ) ? $_SESSION[ $key ] : $default;
 	}
@@ -442,15 +525,19 @@ class _Request {
 	}
 }
 
+/**
+ * Class klein_Response
+ *
+ * @since 1.0.3
+ */
+class klein_Response extends StdClass {
 
-class _Response extends StdClass {
-
-	static    $_headers        = null;
-	public    $chunked         = false;
+	public static $_headers = null;
+	public $chunked = false;
 	protected $_errorCallbacks = array();
-	protected $_layout         = null;
-	protected $_view           = null;
-	protected $_code           = 200;
+	protected $_layout = null;
+	protected $_view = null;
+	protected $_code = 200;
 
 	// Enable response chunking. See: http://bit.ly/hg3gHb
 
@@ -581,7 +668,7 @@ class _Response extends StdClass {
 
 		$request_uri = isset( $_SERVER['REQUEST_URI'] ) ? $_SERVER['REQUEST_URI'] : '/';
 		if ( strpos( $request_uri, '?' ) !== false ) {
-			$request_uri = strstr( $request_uri, '?', true );
+			$request_uri = str_replace( stristr( $request_uri, "?" ), "", $request_uri );
 		}
 
 		return $request_uri . ( ! empty( $query ) ? '?' . http_build_query( $query ) : null );
@@ -664,7 +751,7 @@ class _Response extends StdClass {
 	// Renders a view without a layout
 
 	public function session( $key, $value = null ) {
-		startSession();
+		klein_start_session();
 
 		return $_SESSION[ $key ] = $value;
 	}
@@ -701,7 +788,7 @@ class _Response extends StdClass {
 	// Routes an exception through the error callbacks
 
 	public function flash( $msg, $type = 'info', $params = null ) {
-		startSession();
+		klein_start_session();
 		if ( is_array( $type ) ) {
 			$params = $type;
 			$type   = 'info';
@@ -721,7 +808,7 @@ class _Response extends StdClass {
 		$md   = array(
 			'/\[([^\]]++)\]\(([^\)]++)\)/' => '<a href="$2">$1</a>',
 			'/\*\*([^\*]++)\*\*/'          => '<strong>$1</strong>',
-			'/\*([^\*]++)\*/'              => '<em>$1</em>'
+			'/\*([^\*]++)\*/'              => '<em>$1</em>',
 		);
 		$str  = array_shift( $args );
 		if ( is_array( $args[0] ) ) {
@@ -743,7 +830,7 @@ class _Response extends StdClass {
 	// Escapes a string
 
 	public function flashes( $type = null ) {
-		startSession();
+		klein_start_session();
 		if ( ! isset( $_SESSION['__flashes'] ) ) {
 			return array();
 		}
@@ -807,18 +894,36 @@ class _Response extends StdClass {
 	}
 }
 
-
-function addValidator( $method, $callback ) {
-	_Validator::$_methods[ strtolower( $method ) ] = $callback;
+/**
+ * Adds a custom route validation callback.
+ *
+ * Validators registered with this method will be available using the `is<method>` and `not<method>` chained
+ * on the `$request->validate(<key>)` method; see the README.md file.
+ *
+ * @since 1.0.3
+ *
+ * @param string $method The validation pattern slug; e.g. `hex` or `userId`
+ * @param callable $callback The function that will be called to validate the pattern; should return a boolean value
+ */
+function klein_addValidator( $method, $callback ) {
+	klein_Validator::$_methods[ strtolower( $method ) ] = $callback;
 }
 
+/**
+ * Class klein_ValidatorException
+ *
+ * The base class of the exceptions that will be thrown when a validation callback fails.
+ *
+ * @since 1.0.3
+ */
+class klein_ValidatorException extends Exception {}
 
-class ValidatorException extends Exception {
-
-}
-
-
-class _Validator {
+/**
+ * Class klein_Validator
+ *
+ * @since 1.0.3
+ */
+class klein_Validator {
 
 	public static $_methods = array();
 
@@ -977,17 +1082,21 @@ class _Validator {
 		if ( false === $this->_err ) {
 			return $result;
 		} elseif ( false === $result ) {
-			throw new ValidatorException( $this->_err );
+			throw new klein_ValidatorException( $this->_err );
 		}
 
 		return $this;
 	}
 }
 
+/**
+ * Class klein_App
+ *
+ * @since 1.0.3
+ */
+class klein_App {
 
-class _App {
-
-	protected $services         = array();
+	protected $services = array();
 	protected $serviceInstances = array();
 
 	// Check for a lazy service
@@ -1022,8 +1131,12 @@ class _App {
 	}
 }
 
-
-class _Headers {
+/**
+ * Class klein_Headers
+ *
+ * @since 1.0.3
+ */
+class klein_Headers {
 
 	public function header( $key, $value = null ) {
 		header( $this->_header( $key, $value ) );
@@ -1046,4 +1159,4 @@ class _Headers {
 }
 
 
-_Request::$_headers = _Response::$_headers = new _Headers;
+klein_Request::$_headers = klein_Response::$_headers = new klein_Headers;

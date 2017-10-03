@@ -1,0 +1,8 @@
+# Created by .ignore support plugin (hsz.mobi)
+### Composer template
+composer.phar
+/vendor
+# Do not ignore klein_52 main file
+!vendor/lucatume/klein52/wp_klein.php
+
+.idea

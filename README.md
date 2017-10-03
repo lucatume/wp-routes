@@ -1,40 +1,39 @@
 #WP Routes
 
-*Easy WordPress routing plugin with klein.php*
+Easy WordPress routing plugin with [klein](https://github.com/lucatume/klein52).
 
 ## Code Example
-In my plugin or theme `functions.php` file:
+In a plugin file or a theme `functions.php` file:
 
-	add_action('wp-routes/register_routes', function(){
-	
-		// easy to remember admin links
-		respond('/admin', function(){
-			wp_safe_redirect(admin_url());
-			die();
-		});
-		respond('/login', function(){
-			wp_safe_redirect(wp_login_url());
-			die();
-		});
-		
-		// an easy JSON route		
-		with('/posts', function(){
-			respond('GET', '/[i:id]', function($request){
-				$post = get_post($request->id);
-				if ($post) {echo json_encode($post);}
-				else {echo json_encode(array('error' => 'Not a valid post ID'));}
-			});
-			respond('POST', '/new', function($request){
-				if(!wp_verify_nonce($_POST['wp_nonce'], 'add-new-post')) {
-					echo json_encode(array('error' => 'Not authorized to create new posts'));
-					return;
-				}	
-				$id = wp_insert_post('post_title' => $request->title);
-				if ($post) {echo json_encode(get_post($id));}
-				else {echo json_encode(array('error' => 'There was an error creating the post'));}
-			});
-		});
-	});
+```php
+function my_rest_api(){
+	inNamespace( '/my-plugin/api', 'src/routes.php' );
+}
+
+function my_plugin_say_hi( $request ){
+	if( !empty( $request->name ) ){
+		echo "Hi {$request->name}!j";
+	} else {
+		echo "Hi there!";
+	}
+}
+
+function my_plugin_operation( $request ){
+	echo $request->first + $request->second;
+}
+
+add_filter( 'wp-routes/register_routes', 'my_rest_api' );
+```
+
+In the `src/routes.php` file:
+
+```php
+respond( 'GET', '/my-plugin/api/say-hi', 'my_plugin_say_hi' );
+respond( 'GET', '/my-plugin/api/say-hi/[a:name]', 'my_plugin_say_hi' );
+respond( 'GET', '/my-plugin/api/add/[i:first]/[i:second]', 'my_plugin_operation' );
+```
+
+While the example above uses PHP 5.2 compatible code route handlers can be defined using closures; see [examples on klein52 library README file](https://github.com/lucatume/klein52).
 	
 ## Thanks Klein
 The possibilities above are possible thanks to the [klein.php library](https://github.com/chriso/klein.php) by Chris O'Hara; I've merely ported v. 1.2.0 of the library to be back compatible with PHP 5.2 and used the goodness.  

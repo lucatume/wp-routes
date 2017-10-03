@@ -6,5 +6,5 @@ $vendorDir = dirname(dirname(__FILE__));
 $baseDir = dirname($vendorDir);
 
 return array(
-    $vendorDir . '/lucatume/klein52/klein.php',
+    '54a0159557ac4f88317e9bddbda1901a' => $vendorDir . '/lucatume/klein52/klein_load.php',
 );
