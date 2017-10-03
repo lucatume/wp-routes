@@ -1,4 +1,4 @@
-#WP Routes
+# WP Routes
 
 Easy WordPress routing plugin with [klein](https://github.com/lucatume/klein52).
 
