@@ -7,10 +7,10 @@ In a plugin file or a theme `functions.php` file:
 
 ```php
 function my_rest_api(){
-	inNamespace( '/my-plugin/api', 'src/routes.php' );
+	klein_with( '/my-plugin/api', 'src/routes.php' );
 }
 
-function my_plugin_say_hi( $request ){
+function my_plugin_say_hi( klein_Request $request ){
 	if( !empty( $request->name ) ){
 		echo "Hi {$request->name}!j";
 	} else {
@@ -18,8 +18,12 @@ function my_plugin_say_hi( $request ){
 	}
 }
 
-function my_plugin_operation( $request ){
+function my_plugin_operation( klein_Request $request ){
 	echo $request->first + $request->second;
+}
+
+function my_plugin_login( klein_Request $request, klein_Response $response  ){
+	$response->redirect( wp_login_url() );
 }
 
 add_filter( 'wp-routes/register_routes', 'my_rest_api' );
@@ -28,9 +32,13 @@ add_filter( 'wp-routes/register_routes', 'my_rest_api' );
 In the `src/routes.php` file:
 
 ```php
-respond( 'GET', '/my-plugin/api/say-hi', 'my_plugin_say_hi' );
-respond( 'GET', '/my-plugin/api/say-hi/[a:name]', 'my_plugin_say_hi' );
-respond( 'GET', '/my-plugin/api/add/[i:first]/[i:second]', 'my_plugin_operation' );
+// just a redirection
+klein_respond( 'GET', '/login', 'my_plugin_login' );
+
+// API handling
+klein_respond( 'GET\', '/my-plugin/api/say-hi', 'my_plugin_say_hi' );
+klein_respond( 'GET\', '/my-plugin/api/say-hi/[a:name]', 'my_plugin_say_hi' );
+klein_respond( 'GET', '/my-plugin/api/add/[i:first]/[i:second]', 'my_plugin_operation' );
 ```
 
 While the example above uses PHP 5.2 compatible code route handlers can be defined using closures; see [examples on klein52 library README file](https://github.com/lucatume/klein52).

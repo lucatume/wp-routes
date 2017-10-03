@@ -42,7 +42,7 @@ In the `src/routes.php` file:
 
 ```php
 // just a redirection
-klein_respond( \'GET\', \'/login', \'my_plugin_login\' );
+klein_respond( \'GET\', \'/login\', \'my_plugin_login\' );
 
 // API handling
 klein_respond( \'GET\', \'/my-plugin/api/say-hi\', \'my_plugin_say_hi\' );
